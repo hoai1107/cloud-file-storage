@@ -27,6 +27,12 @@ public class FileController {
         return s3Service.getAllFiles();
     }
 
+    @GetMapping("/get-presigned-url")
+    public PresignedUrlDTO getGetPresignedURL(@RequestParam String filename) {
+        return s3Service.generateGetPresignedURL(filename);
+    }
+
+
     @GetMapping("/put-presigned-url")
     public PresignedUrlDTO getPutPresignedURL(@RequestParam String filename) {
         return s3Service.generatePutPresignedURL(filename);
