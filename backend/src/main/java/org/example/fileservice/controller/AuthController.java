@@ -2,6 +2,7 @@ package org.example.fileservice.controller;
 
 import org.example.fileservice.dto.request.UserLoginDTO;
 import org.example.fileservice.dto.request.UserRegisterDTO;
+import org.example.fileservice.dto.response.JwtTokenDTO;
 import org.example.fileservice.dto.response.UserDTO;
 import org.example.fileservice.service.AuthService;
 import org.springframework.http.ResponseEntity;
@@ -27,8 +28,8 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<Void> loginUser(@RequestBody UserLoginDTO userLoginDTO) {
-        authService.login(userLoginDTO);
-        return ResponseEntity.ok().build();
+    public ResponseEntity<JwtTokenDTO> loginUser(@RequestBody UserLoginDTO userLoginDTO) {
+        JwtTokenDTO token = authService.login(userLoginDTO);
+        return ResponseEntity.ok(token);
     }
 }

@@ -23,3 +23,6 @@ spring:
 
 bucket:
   name: file-bucket
+
+jwt:
+  secret-key: 632f772922217d47252c565b5f596b355a6172404224
