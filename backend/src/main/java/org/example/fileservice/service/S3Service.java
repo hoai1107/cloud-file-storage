@@ -1,8 +1,11 @@
 package org.example.fileservice.service;
 
+import org.example.fileservice.exception.BadRequestException;
 import org.example.fileservice.model.S3File;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import software.amazon.awssdk.awscore.exception.AwsServiceException;
+import software.amazon.awssdk.core.exception.SdkClientException;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.*;
 import software.amazon.awssdk.services.s3.presigner.S3Presigner;
@@ -61,5 +64,18 @@ public class S3Service {
         PresignedGetObjectRequest presignedRequest = s3Presigner.presignGetObject(presignRequest);
 
         return presignedRequest.url().toExternalForm();
+    }
+
+    public void deleteFile(S3File file) {
+        DeleteObjectRequest deleteObjectRequest = DeleteObjectRequest.builder()
+                .bucket(bucketName)
+                .key(file.getS3Key())
+                .build();
+
+        try {
+            s3Client.deleteObject(deleteObjectRequest);
+        } catch (AwsServiceException | SdkClientException e) {
+            throw new BadRequestException("Error deleting file");
+        }
     }
 }

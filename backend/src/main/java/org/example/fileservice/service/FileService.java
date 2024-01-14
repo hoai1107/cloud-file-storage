@@ -61,4 +61,16 @@ public class FileService {
         String presignedUrl = s3Service.generateGetPresignedURL(file);
         return new PresignedUrlDTO(presignedUrl);
     }
+
+    public void deleteFile(UUID fileId, UUID userId) {
+        S3File file = fileRepository.findById(fileId)
+                .orElseThrow(() -> new BadRequestException("File not found"));
+
+        if (!file.getUser().getId().equals(userId)) {
+            throw new BadRequestException("Invalid user");
+        }
+
+        s3Service.deleteFile(file);
+        fileRepository.delete(file);
+    }
 }
