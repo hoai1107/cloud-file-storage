@@ -22,12 +22,17 @@ public class FileController {
     }
 
     @GetMapping
-    public List<S3FileDTO> getAllFiles(@RequestAttribute("id")UUID userId) {
+    public List<S3FileDTO> getAllFiles(@RequestAttribute("id") UUID userId) {
         return fileService.getAllFiles(userId);
     }
 
-    @GetMapping("/put-presigned-url")
-    public PresignedUrlDTO getPutPresignedURL(@RequestBody UploadFileDTO uploadFileDTO, @RequestAttribute("id")UUID userId) {
+    @PostMapping("/upload")
+    public PresignedUrlDTO getPutPresignedURL(@RequestBody UploadFileDTO uploadFileDTO, @RequestAttribute("id") UUID userId) {
         return fileService.getUploadFileUrl(uploadFileDTO, userId);
+    }
+
+    @GetMapping("/get")
+    public PresignedUrlDTO getGetPresignedURL(@RequestParam("fileId") UUID fileId, @RequestAttribute("id") UUID userId) {
+        return fileService.getDownloadFileUrl(fileId, userId);
     }
 }

@@ -32,7 +32,6 @@ public class FileService {
                 .map(s3Object -> {
                     S3File s3File = fileRepository.findByS3Key(s3Object.key())
                             .orElseThrow(() -> new BadRequestException("File not found"));
-
                     return FileMapper.INSTANCE.from(s3File, s3Object);
                 })
                 .toList();
@@ -43,14 +42,23 @@ public class FileService {
         S3File file = FileMapper.INSTANCE.uploadFileDTOToS3File(uploadFileDTO);
 
         file.setUser(user);
+        file = fileRepository.saveAndFlush(file);
         file.setS3Key(userId + "/" + file.getId());
-        file = fileRepository.save(file);
+        fileRepository.save(file);
 
-        String presignedURL = s3Service.generatePutPresignedURL(file);
-        return new PresignedUrlDTO(presignedURL);
+        String presignedUrl = s3Service.generatePutPresignedURL(file);
+        return new PresignedUrlDTO(presignedUrl);
     }
 
-    public void getFile() {
-        // TODO: Implement
+    public PresignedUrlDTO getDownloadFileUrl(UUID fileId, UUID userId) {
+        S3File file = fileRepository.findById(fileId)
+                .orElseThrow(() -> new BadRequestException("File not found"));
+
+        if (!file.getUser().getId().equals(userId)) {
+            throw new BadRequestException("Invalid user");
+        }
+
+        String presignedUrl = s3Service.generateGetPresignedURL(file);
+        return new PresignedUrlDTO(presignedUrl);
     }
 }

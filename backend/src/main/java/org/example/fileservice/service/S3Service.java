@@ -1,6 +1,5 @@
 package org.example.fileservice.service;
 
-import org.example.fileservice.dto.response.PresignedUrlDTO;
 import org.example.fileservice.model.S3File;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -49,7 +48,7 @@ public class S3Service {
         return presignedRequest.url().toExternalForm();
     }
 
-    public PresignedUrlDTO generateGetPresignedURL(S3File file) {
+    public String generateGetPresignedURL(S3File file) {
         GetObjectPresignRequest presignRequest = GetObjectPresignRequest.builder()
                 .signatureDuration(Duration.ofMinutes(5))
                 .getObjectRequest(request -> request
@@ -61,6 +60,6 @@ public class S3Service {
 
         PresignedGetObjectRequest presignedRequest = s3Presigner.presignGetObject(presignRequest);
 
-        return new PresignedUrlDTO(presignedRequest.url().toExternalForm());
+        return presignedRequest.url().toExternalForm();
     }
 }
