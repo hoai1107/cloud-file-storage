@@ -1,6 +1,5 @@
 package org.example.fileservice.service;
 
-import org.example.fileservice.dto.response.FileObjectDTO;
 import org.example.fileservice.dto.response.PresignedUrlDTO;
 import org.example.fileservice.model.S3File;
 import org.springframework.beans.factory.annotation.Value;
@@ -15,6 +14,7 @@ import software.amazon.awssdk.services.s3.presigner.model.PutObjectPresignReques
 
 import java.time.Duration;
 import java.util.List;
+import java.util.UUID;
 
 @Service
 public class S3Service {
@@ -29,44 +29,33 @@ public class S3Service {
         this.s3Presigner = s3Presigner;
     }
 
-    public List<S3Object> getAllFiles() {
+    public List<S3Object> getAllFiles(UUID userId) {
         ListObjectsV2Request request = ListObjectsV2Request.builder()
                 .bucket(bucketName)
+                .prefix(userId.toString())
                 .build();
 
         ListObjectsV2Response response = s3Client.listObjectsV2(request);
         return response.contents();
     }
 
-    public String generatePutPresignedURL(S3File s3File) {
+    public String generatePutPresignedURL(S3File file) {
         PutObjectPresignRequest presignRequest = PutObjectPresignRequest.builder()
                 .signatureDuration(Duration.ofMinutes(5))
-                .putObjectRequest(request -> request.bucket(bucketName).key(s3File.getId().toString()))
+                .putObjectRequest(request -> request.bucket(bucketName).key(file.getS3Key()))
                 .build();
 
         PresignedPutObjectRequest presignedRequest = s3Presigner.presignPutObject(presignRequest);
-
         return presignedRequest.url().toExternalForm();
     }
 
-    public PresignedUrlDTO generateGetPresignedURL(String filename) {
-        GetObjectPresignRequest presignRequest = GetObjectPresignRequest.builder()
-                .signatureDuration(Duration.ofMinutes(5))
-                .getObjectRequest(request -> request.bucket(bucketName).key(filename))
-                .build();
-
-        PresignedGetObjectRequest presignedRequest = s3Presigner.presignGetObject(presignRequest);
-
-        return new PresignedUrlDTO(presignedRequest.url().toExternalForm());
-    }
-
-    public PresignedUrlDTO generateDownloadPresignedURL(String filename) {
+    public PresignedUrlDTO generateGetPresignedURL(S3File file) {
         GetObjectPresignRequest presignRequest = GetObjectPresignRequest.builder()
                 .signatureDuration(Duration.ofMinutes(5))
                 .getObjectRequest(request -> request
                         .bucket(bucketName)
-                        .key(filename)
-                        .responseContentDisposition("attachment; filename=\"" + filename + "\"")
+                        .key(file.getS3Key())
+                        .responseContentDisposition("attachment; filename=\"" + file.getFileName() + "\"")
                 )
                 .build();
 

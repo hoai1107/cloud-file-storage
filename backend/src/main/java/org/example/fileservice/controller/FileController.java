@@ -1,15 +1,10 @@
 package org.example.fileservice.controller;
 
 import org.example.fileservice.dto.request.UploadFileDTO;
-import org.example.fileservice.dto.response.FileObjectDTO;
+import org.example.fileservice.dto.response.S3FileDTO;
 import org.example.fileservice.dto.response.PresignedUrlDTO;
-import org.example.fileservice.mapper.FileMapper;
-import org.example.fileservice.model.S3File;
 import org.example.fileservice.service.FileService;
-import org.example.fileservice.service.S3Service;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -27,8 +22,8 @@ public class FileController {
     }
 
     @GetMapping
-    public List<FileObjectDTO> getAllFiles() {
-        return fileService.getAllFiles();
+    public List<S3FileDTO> getAllFiles(@RequestAttribute("id")UUID userId) {
+        return fileService.getAllFiles(userId);
     }
 
     @GetMapping("/put-presigned-url")

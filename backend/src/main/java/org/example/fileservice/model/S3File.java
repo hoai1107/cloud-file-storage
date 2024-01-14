@@ -1,9 +1,6 @@
 package org.example.fileservice.model;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
+import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.proxy.HibernateProxy;
 
@@ -21,9 +18,13 @@ import java.util.UUID;
 @Builder
 public class S3File {
     @Id
+    @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
+    private String s3Key;
+
     private String fileName;
+
     private String fileType;
 
     @ManyToOne
