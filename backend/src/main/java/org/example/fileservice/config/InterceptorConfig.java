@@ -17,6 +17,6 @@ public class InterceptorConfig implements WebMvcConfigurer {
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
        registry.addInterceptor(jwtInterceptor)
-               .addPathPatterns("/auth/test");
+               .addPathPatterns("/files/**");
     }
 }

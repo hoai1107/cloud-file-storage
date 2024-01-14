@@ -1,40 +1,38 @@
 package org.example.fileservice.controller;
 
+import org.example.fileservice.dto.request.UploadFileDTO;
 import org.example.fileservice.dto.response.FileObjectDTO;
 import org.example.fileservice.dto.response.PresignedUrlDTO;
+import org.example.fileservice.mapper.FileMapper;
+import org.example.fileservice.model.S3File;
+import org.example.fileservice.service.FileService;
 import org.example.fileservice.service.S3Service;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("files")
 public class FileController {
 
-    private final S3Service s3Service;
+    private final FileService fileService;
 
     @Autowired
-    public FileController(S3Service s3Service) {
-        this.s3Service = s3Service;
+    public FileController(FileService fileService) {
+        this.fileService = fileService;
     }
 
     @GetMapping
     public List<FileObjectDTO> getAllFiles() {
-        return s3Service.getAllFiles();
+        return fileService.getAllFiles();
     }
-
-    @GetMapping("/get-presigned-url")
-    public PresignedUrlDTO getGetPresignedURL(@RequestParam String filename) {
-        return s3Service.generateGetPresignedURL(filename);
-    }
-
 
     @GetMapping("/put-presigned-url")
-    public PresignedUrlDTO getPutPresignedURL(@RequestParam String filename) {
-        return s3Service.generatePutPresignedURL(filename);
+    public PresignedUrlDTO getPutPresignedURL(@RequestBody UploadFileDTO uploadFileDTO, @RequestAttribute("id")UUID userId) {
+        return fileService.getUploadFileUrl(uploadFileDTO, userId);
     }
 }

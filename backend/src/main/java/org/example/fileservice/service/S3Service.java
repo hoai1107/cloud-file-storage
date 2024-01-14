@@ -2,6 +2,7 @@ package org.example.fileservice.service;
 
 import org.example.fileservice.dto.response.FileObjectDTO;
 import org.example.fileservice.dto.response.PresignedUrlDTO;
+import org.example.fileservice.model.S3File;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import software.amazon.awssdk.services.s3.S3Client;
@@ -13,10 +14,7 @@ import software.amazon.awssdk.services.s3.presigner.model.PresignedPutObjectRequ
 import software.amazon.awssdk.services.s3.presigner.model.PutObjectPresignRequest;
 
 import java.time.Duration;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 
 @Service
 public class S3Service {
@@ -26,51 +24,50 @@ public class S3Service {
     @Value("${bucket.name}")
     private String bucketName;
 
-    // aws s3 ls s3://file-bucket --recursive --human-readable --summarize --endpoint-url=http://localhost:4566
-    // aws s3 ls --endpoint-url=http://localhost:4566
-
     public S3Service(S3Client s3Client, S3Presigner s3Presigner) {
         this.s3Client = s3Client;
         this.s3Presigner = s3Presigner;
     }
 
-    public List<FileObjectDTO> getAllFiles() {
+    public List<S3Object> getAllFiles() {
         ListObjectsV2Request request = ListObjectsV2Request.builder()
                 .bucket(bucketName)
                 .build();
 
         ListObjectsV2Response response = s3Client.listObjectsV2(request);
-
-        return response.contents().stream()
-                .map(content -> new FileObjectDTO(content.key(), content.size(), content.lastModified()))
-                .collect(Collectors.toList());
+        return response.contents();
     }
 
-    public PresignedUrlDTO generatePutPresignedURL(String filename) {
-        PutObjectRequest request = PutObjectRequest.builder()
-                .bucket(bucketName)
-                .key(filename)
-                .build();
-
+    public String generatePutPresignedURL(S3File s3File) {
         PutObjectPresignRequest presignRequest = PutObjectPresignRequest.builder()
                 .signatureDuration(Duration.ofMinutes(5))
-                .putObjectRequest(request)
+                .putObjectRequest(request -> request.bucket(bucketName).key(s3File.getId().toString()))
                 .build();
 
         PresignedPutObjectRequest presignedRequest = s3Presigner.presignPutObject(presignRequest);
 
-        return new PresignedUrlDTO(presignedRequest.url().toExternalForm());
+        return presignedRequest.url().toExternalForm();
     }
 
     public PresignedUrlDTO generateGetPresignedURL(String filename) {
-        GetObjectRequest request = GetObjectRequest.builder()
-                .bucket(bucketName)
-                .key(filename)
-                .build();
-
         GetObjectPresignRequest presignRequest = GetObjectPresignRequest.builder()
                 .signatureDuration(Duration.ofMinutes(5))
-                .getObjectRequest(request)
+                .getObjectRequest(request -> request.bucket(bucketName).key(filename))
+                .build();
+
+        PresignedGetObjectRequest presignedRequest = s3Presigner.presignGetObject(presignRequest);
+
+        return new PresignedUrlDTO(presignedRequest.url().toExternalForm());
+    }
+
+    public PresignedUrlDTO generateDownloadPresignedURL(String filename) {
+        GetObjectPresignRequest presignRequest = GetObjectPresignRequest.builder()
+                .signatureDuration(Duration.ofMinutes(5))
+                .getObjectRequest(request -> request
+                        .bucket(bucketName)
+                        .key(filename)
+                        .responseContentDisposition("attachment; filename=\"" + filename + "\"")
+                )
                 .build();
 
         PresignedGetObjectRequest presignedRequest = s3Presigner.presignGetObject(presignRequest);
