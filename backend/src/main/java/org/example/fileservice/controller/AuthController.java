@@ -1,15 +1,15 @@
 package org.example.fileservice.controller;
 
+import jakarta.servlet.http.HttpServletRequest;
 import org.example.fileservice.dto.request.UserLoginDTO;
 import org.example.fileservice.dto.request.UserRegisterDTO;
 import org.example.fileservice.dto.response.JwtTokenDTO;
 import org.example.fileservice.dto.response.UserDTO;
 import org.example.fileservice.service.AuthService;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.UUID;
 
 @RestController
 @RequestMapping("auth")
@@ -31,5 +31,10 @@ public class AuthController {
     public ResponseEntity<JwtTokenDTO> loginUser(@RequestBody UserLoginDTO userLoginDTO) {
         JwtTokenDTO token = authService.login(userLoginDTO);
         return ResponseEntity.ok(token);
+    }
+
+    @GetMapping("/test")
+    public UUID getUsername(@RequestAttribute("id") UUID id) {
+        return id;
     }
 }
