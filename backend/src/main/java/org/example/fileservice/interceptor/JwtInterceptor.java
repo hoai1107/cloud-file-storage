@@ -8,6 +8,8 @@ import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.HandlerInterceptor;
 
+import java.util.Arrays;
+
 @Component
 public class JwtInterceptor implements HandlerInterceptor {
 
@@ -17,12 +19,20 @@ public class JwtInterceptor implements HandlerInterceptor {
         this.jwtService = jwtService;
     }
 
+    public String getJwtCookie(HttpServletRequest request) {
+        return Arrays.stream(request.getCookies())
+                .filter(cookie -> cookie.getName().equals("access-token"))
+                .findFirst()
+                .orElseThrow()
+                .getValue();
+    }
+
     @Override
     public boolean preHandle(@NonNull HttpServletRequest request,
                              @NonNull HttpServletResponse response,
                              @NonNull Object handler) {
         try {
-            String id = jwtService.getId(request.getHeader("Authorization").substring(7));
+            String id = jwtService.getId(getJwtCookie(request));
             request.setAttribute("id", id);
         } catch (Exception e) {
             throw new BadRequestException("Invalid token");

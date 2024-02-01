@@ -6,6 +6,8 @@ import org.example.fileservice.dto.request.UserRegisterDTO;
 import org.example.fileservice.dto.response.JwtTokenDTO;
 import org.example.fileservice.dto.response.UserDTO;
 import org.example.fileservice.service.AuthService;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -30,7 +32,14 @@ public class AuthController {
     @PostMapping("/login")
     public ResponseEntity<JwtTokenDTO> loginUser(@RequestBody UserLoginDTO userLoginDTO) {
         JwtTokenDTO token = authService.login(userLoginDTO);
-        return ResponseEntity.ok(token);
+        ResponseCookie cookie = ResponseCookie.from("access-token", token.jwtToken())
+                .httpOnly(true)
+                .secure(true)
+                .path("/")
+                .maxAge(3600)
+                .build();
+
+        return ResponseEntity.ok().header(HttpHeaders.SET_COOKIE, cookie.toString()).body(token);
     }
 
     @GetMapping("/test")
