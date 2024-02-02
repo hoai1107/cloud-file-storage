@@ -6,3 +6,4 @@ aws configure set aws_access_key_id "test" \
 && aws configure set output "json"
 
 aws --endpoint-url=http://localhost:4566 --region ap-south-1 s3 mb s3://file-bucket
+awslocal s3api put-bucket-cors --bucket file-bucket --cors-configuration file:///var/lib/localstack/s3-cors.json

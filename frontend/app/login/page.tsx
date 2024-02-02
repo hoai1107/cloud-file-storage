@@ -3,6 +3,8 @@
 import { useForm } from "react-hook-form";
 import axiosInstance from "../_config/axios";
 import { useRouter } from "next/navigation";
+import { useCookies } from "react-cookie";
+import { LoginResponse } from "@/types/auth";
 
 type LoginForm = {
   username: string;
@@ -11,12 +13,16 @@ type LoginForm = {
 
 const Login = () => {
   const { register, handleSubmit } = useForm<LoginForm>();
+  const [cookies, setCookie] = useCookies(["jwt"]);
   const router = useRouter();
 
   const handleLogin = async (data: LoginForm) => {
-    const response = await axiosInstance.post("/auth/login", data);
-    console.log(response);
+    const response = await axiosInstance.post<LoginResponse>(
+      "/auth/login",
+      data
+    );
 
+    setCookie("jwt", response.data.jwtToken, { path: "/" });
     router.replace("/files");
   };
 
